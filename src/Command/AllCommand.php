@@ -1,45 +1,53 @@
 <?php
 
-    namespace EntityParsingBundle\Command;
+namespace EntityParsingBundle\Command;
 
-    use Symfony\Component\Console\Command\Command;
-    use Symfony\Component\Console\Input\InputInterface;
-    use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
-    class AllCommand extends Command
+use EntityParsingBundle\Configuration\ConfigurationDefinition;
+use EntityParsingBundle\Generator\CodeGeneratorFactory;
+
+class AllCommand extends ParsingExtensionCommand
+{
+    protected static $defaultName = 'entity_parsing_bundle:all';
+
+    private array $configurations;
+
+    public function __construct(array $entity_directories)
     {
-        protected static $defaultName = 'entity_parsing_bundle:all';
+        parent::__construct();
 
-        private array $entity_directories;
+        $instanciate = function($entity_directory) {
+            $config = new ConfigurationDefinition($entity_directory);
+            return $config;
+        };
 
-        public function __construct(array $entity_directories)
-        {
-            parent::__construct();
-            $this->entity_directories = $entity_directories;
-        }
-
-        protected function configure()
-        {
-            $this
-                ->setName('entity_parsing_bundle:all')
-                ->setDescription('Make something')
-                ->setHelp('Reads all source paths from config and writes them into related files in the corresponding target path. This command takes no arguments.');
-        }
-
-        protected function execute(InputInterface $input, OutputInterface $output)
-        {
-            $output->writeln([
-                'Make something',
-                '============',
-                '',
-            ]);
-
-            foreach($this->entity_directories as $entity_directory) {
-                $output->writeln('Entity directory: ' . implode(', ', $entity_directory));
-            }
-
-            $output->writeln('Made !');
-
-            return Command::SUCCESS;
-        }
+        $this->configurations = array_map($instanciate, $entity_directories);
     }
+
+    protected function configure()
+    {
+        $this
+            ->setName('entity_parsing_bundle:all')
+            ->setDescription('Make something')
+            ->setHelp('Reads all source paths from config and writes them into related files in the corresponding target path. This command takes no arguments.');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        if($input->getOption('help'))
+        {
+            return ParsingExtensionCommand::SUCCESS;
+        }
+        
+        foreach($this->configurations as $config)
+        {
+            $this->io->title($config->draw());
+
+            $codegen = CodeGeneratorFactory::create($config->getLanguage(), $this->io);
+        }
+
+        return ParsingExtensionCommand::SUCCESS;
+    }
+}
