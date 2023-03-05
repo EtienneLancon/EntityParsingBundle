@@ -8,30 +8,23 @@ use EntityParsingBundle\Generator\SupportedLanguagesEnum;
 use EntityParsingBundle\Generator\CodeGenerator\JsCodeGenerator;
 use EntityParsingBundle\Generator\CodeGenerator\TsCodeGenerator;
 use EntityParsingBundle\Generator\CodeGenerator\PythonCodeGenerator;
+
+use EntityParsingBundle\Configuration\ConfigurationDefinition;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class CodeGeneratorFactory
 {
-    public static function create(string $language, SymfonyStyle $io): CodeGeneratorInterface
+    public static function create(ConfigurationDefinition $config, SymfonyStyle $io): CodeGeneratorInterface
     {
-        $generator = null;
-
-        switch ($language) {
+        switch ($config->getLanguage()) {
             case SupportedLanguagesEnum::JAVASCRIPT:
-                $generator = new JsCodeGenerator();
-                break;
+                return new JsCodeGenerator($config, $io);
             case SupportedLanguagesEnum::TYPESCRIPT:
-                $generator = new TsCodeGenerator();
-                break;
+                return new TsCodeGenerator($config, $io);
             case SupportedLanguagesEnum::PYTHON:
-                $generator = new PythonCodeGenerator();
-                break;
+                return new PythonCodeGenerator($config, $io);
             default:
-                throw new UnsuportedLanguageException('Language '.$language.' is not supported.');
+                throw new UnsuportedLanguageException('Language '.$config->getLanguage().' is not supported.');
         }
-
-        $generator->init($io);
-
-        return $generator;
     }
 }

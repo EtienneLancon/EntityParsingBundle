@@ -7,10 +7,12 @@
     <services>
         <service id="entity_parsing_bundle.command.all_command" class="EntityParsingBundle\Command\AllCommand">
             <tag name="console.command" command="parsing:all"/>
-            <argument key="$entity_directories">%entity_parsing_bundle.entity_directories%</argument>
+            <argument type="service" id="doctrine" />
+            <argument key="$managers">%entity_parsing_bundle.managers%</argument>
         </service>
         <service id="entity_parsing_bundle.command.one_command" class="EntityParsingBundle\Command\OneCommand">
             <tag name="console.command" command="parsing:one"/>
+            <argument type="service" id="doctrine" />
             <argument type="service" id="service_container" />
         </service>
     </services>

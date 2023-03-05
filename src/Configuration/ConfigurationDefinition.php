@@ -2,6 +2,9 @@
 
 namespace EntityParsingBundle\Configuration;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\ORM\EntityManager;
+
 use EntityParsingBundle\Generator\SupportedLanguagesEnum;
 
 use EntityParsingBundle\Exception\NoEntityFoundException;
@@ -12,22 +15,28 @@ use EntityParsingBundle\Exception\UnsuportedLanguageException;
 
 class ConfigurationDefinition
 {
-    private string $sourcePath;
     private string $targetPath;
     private string $language;
+    private EntityManager $em;
+    private string $namespace;
+    private string $managerName;
 
-    public function __construct(array $configuration)
+    public function __construct(array $configuration, Registry $doctrine)
     {
-        $this->sourcePath = $configuration['source_path'];
         $this->targetPath = $configuration['target_path'];
         $this->language = $configuration['language'];
+        $this->managerName = $configuration['entity_manager_name'];
+
+        $this->em = $doctrine->getManager($configuration['entity_manager_name']);
+        $this->namespace = array_values($this->em->getConfiguration()->getEntityNamespaces())[0];
 
         $this->doCheck();
     }
 
-    public function draw(): string
+    public function draw(?string $entity = null): string
     {
-        return 'Parsing '.$this->sourcePath.' into '.$this->targetPath.' in '.$this->language;
+        return 'Parsing '.(empty($entity) ? 'manager '.$this->managerName : $this->namespace.'\\'.$entity).' into '
+            .$this->targetPath.' in '.SupportedLanguagesEnum::getLabel($this->language);
     }
 
     private function doCheck(): void
@@ -38,32 +47,29 @@ class ConfigurationDefinition
 
     private function checkPaths(): void
     {
-        if (!is_dir($this->sourcePath)) {
-            throw new PathNotFoundException($this->sourcePath.' is not a directory');
-        }
-
-        if (!is_readable($this->sourcePath)) {
-            throw new PathNotReadableException($this->sourcePath.' is not readable');
-        }
-
-        if(empty(preg_grep('~.php~', scandir($this->sourcePath)))) {
-            throw new NoEntityFoundException('No entity found in '.$this->sourcePath);
-        }
-
         if (!is_dir($this->targetPath)) {
             throw new PathNotFoundException($this->targetPath.' is not a directory');
         }
 
         if (!is_writable($this->targetPath)) {
-            throw new PathNotWritableException($this->targetPath.' is not writable');
+            throw new PathNotWritableException($this->targetPath.' is found but is not writable');
         }
     }
 
     private function checkLanguage(): void
     {
-        if (!in_array($this->language, SupportedLanguagesEnum::getValues())) {
+        if (SupportedLanguagesEnum::isValid($this->language) === false) {
             throw new UnsuportedLanguageException('Language '.$this->language.' is not supported');
         }
+    }
+
+    public function isValidEntity(string $entity): bool
+    {
+        if(!class_exists($this->namespace.'\\'.$entity)){
+            throw new NoEntityFoundException('Entity '.$entity.' does not exist in namespace '.$this->namespace);
+        }
+
+        return true;
     }
 
     public function getLanguage(): string
@@ -71,13 +77,13 @@ class ConfigurationDefinition
         return $this->language;
     }
 
-    public function getSourcePath(): string
-    {
-        return $this->sourcePath;
-    }
-
     public function getTargetPath(): string
     {
         return $this->targetPath;
+    }
+
+    public function getManager(): EntityManager
+    {
+        return $this->em;
     }
 }

@@ -15,7 +15,7 @@ class EntityParsingBundleExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('entity_parsing_bundle.entity_directories', $config['entity_directories']);
+        $container->setParameter('entity_parsing_bundle.managers', $config['managers']);
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
