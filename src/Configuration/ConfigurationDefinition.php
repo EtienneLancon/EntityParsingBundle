@@ -10,7 +10,6 @@ use EntityParsingBundle\Generator\SupportedLanguagesEnum;
 use EntityParsingBundle\Exception\NoEntityFoundException;
 use EntityParsingBundle\Exception\PathNotFoundException;
 use EntityParsingBundle\Exception\PathNotWritableException;
-use EntityParsingBundle\Exception\PathNotReadableException;
 use EntityParsingBundle\Exception\UnsuportedLanguageException;
 
 class ConfigurationDefinition
@@ -65,8 +64,8 @@ class ConfigurationDefinition
 
     public function isValidEntity(string $entity): bool
     {
-        if(!class_exists($this->namespace.'\\'.$entity)){
-            throw new NoEntityFoundException('Entity '.$entity.' does not exist in namespace '.$this->namespace);
+        if(!class_exists($entity)){
+            throw new NoEntityFoundException('Entity '.$entity.' does not exist.');
         }
 
         return true;
@@ -85,5 +84,10 @@ class ConfigurationDefinition
     public function getManager(): EntityManager
     {
         return $this->em;
+    }
+
+    public function getNamespace(): string
+    {
+        return $this->namespace;
     }
 }

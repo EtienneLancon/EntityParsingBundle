@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use EntityParsingBundle\Configuration\ConfigurationDefinition;
-use EntityParsingBundle\Generator\CodeGeneratorFactory;
+use EntityParsingBundle\Generator\EntityParserFactory;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 
@@ -19,6 +19,7 @@ class OneCommand extends ParsingExtensionCommand
     private ContainerInterface $container;
     private ConfigurationDefinition $config;
     private ?string $entity;
+    private ?string $fqclassname = null;
 
     public function __construct(Registry $doctrine, ContainerInterface $container)
     {
@@ -57,9 +58,11 @@ class OneCommand extends ParsingExtensionCommand
             return self::SUCCESS;
         }
 
-        if(!$this->config->isValidEntity($this->entity))
+        $this->fqclassname = $this->config->getNamespace().'\\'.$this->entity;
+
+        if(!$this->config->isValidEntity($this->fqclassname))
         {
-            $this->io->error('The given entity '.$this->entity.' does not exist.');
+            $this->io->error('The given entity '.$this->fqclassname.' does not exist.');
             exit(self::INVALID);
         }
 
@@ -75,9 +78,11 @@ class OneCommand extends ParsingExtensionCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $codegen = CodeGeneratorFactory::create($this->config, $this->io);
+        $factory = new EntityParserFactory($this->io);
 
-        $codegen->generate($this->entity);
+        $entityparser = $factory->create($this->config, $this->fqclassname);
+
+        $entityparser->parse();
 
         return self::SUCCESS;
     }

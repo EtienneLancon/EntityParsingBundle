@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use EntityParsingBundle\Configuration\ConfigurationDefinition;
-use EntityParsingBundle\Generator\CodeGeneratorFactory;
+use EntityParsingBundle\Generator\EntityParserFactory;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 
@@ -50,12 +50,14 @@ class AllCommand extends ParsingExtensionCommand
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
-    {        
+    {
+        $factory = new EntityParserFactory($this->io);
+
         foreach($this->configurations as $config)
         {
             $this->io->title($config->draw());
-
-            $codegen = CodeGeneratorFactory::create($config, $this->io);
+            
+            $entityparser = $factory->create($config);
         }
 
         return self::SUCCESS;

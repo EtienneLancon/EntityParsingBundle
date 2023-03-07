@@ -2,9 +2,9 @@
 
 namespace EntityParsingBundle\Generator;
 
+use Doctrine\ORM\Mapping\MappingAttribute;
+
 interface CodeGeneratorInterface
 {
-    public function generate(string $entity);
-    public function parseEntity(string $entity);
-    public function parseEntities();
+    public function doCodeForSinglePropertyAnnotation(string $propertyName, MappingAttribute $annotation): string;
 }
