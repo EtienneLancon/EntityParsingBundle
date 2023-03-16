@@ -55,12 +55,20 @@ class EntityParser
         foreach($this->em->getClassMetadata($entity)->getReflectionClass()->getProperties() as $property) {
             $this->parseProperty($property);
         }
+
+        $this->end();
     }
 
     private function parseProperty(\ReflectionProperty $property)
     {
         foreach($this->annotationReader->getPropertyAnnotations($property) as $annotation) {
-            $this->codegen->doCodeForSinglePropertyAnnotation($property->name, $annotation);
+            $this->codegen->readSinglePropertyAnnotation($property->name, $annotation);
         }
+    }
+
+    private function end()
+    {
+        $this->codegen->doCurrentPropertyPrototype();
+        $this->codegen->doCode();
     }
 }

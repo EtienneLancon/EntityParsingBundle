@@ -6,5 +6,7 @@ use Doctrine\ORM\Mapping\MappingAttribute;
 
 interface CodeGeneratorInterface
 {
-    public function doCodeForSinglePropertyAnnotation(string $propertyName, MappingAttribute $annotation): string;
+    public function readSinglePropertyAnnotation(string $propertyName, MappingAttribute $annotation): void;
+    public function doCurrentPropertyPrototype(): void;
+    public function doCode(): void;
 }

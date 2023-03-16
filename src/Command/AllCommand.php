@@ -58,6 +58,8 @@ class AllCommand extends ParsingExtensionCommand
             $this->io->title($config->draw());
             
             $entityparser = $factory->create($config);
+
+            $entityparser->parse();
         }
 
         return self::SUCCESS;

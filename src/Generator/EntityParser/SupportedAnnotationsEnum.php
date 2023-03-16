@@ -65,4 +65,14 @@ class SupportedAnnotationsEnum
     {
         return array_search($class = get_class($annotation), self::VALUES) !== false ? $class : null;
     }
+
+    static public function getValues(): array
+    {
+        return self::VALUES;
+    }
+
+    static public function isValid(MappingAttribute $annotation): bool
+    {
+        return in_array(get_class($annotation), self::getValues());
+    }
 }
