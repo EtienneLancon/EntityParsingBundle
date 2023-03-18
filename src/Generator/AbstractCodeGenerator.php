@@ -2,21 +2,23 @@
 
 namespace EntityParsingBundle\Generator;
 
-use EntityParsingBundle\Configuration\ConfigurationDefinition;
-
 use Doctrine\ORM\Mapping\MappingAttribute;
-use EntityParsingBundle\Generator\EntityParser\SupportedAnnotationsEnum;
-
 use Symfony\Component\Console\Style\SymfonyStyle;
+
+use EntityParsingBundle\Configuration\ConfigurationDefinition;
+use EntityParsingBundle\Enum\SupportedAnnotationsEnum;
+use EntityParsingBundle\Generator\EntityParser\EntityParser;
+use EntityParsingBundle\Generator\Structure\PropertyTypeInterface;
+use EntityParsingBundle\Generator\Structure\PropertyPrototypeFactory;
 
 
 abstract class AbstractCodeGenerator implements CodeGeneratorInterface
 {
     protected SymfonyStyle $io;
     protected ConfigurationDefinition $config;
-    protected string $currentPropertyName = '';
     protected array $currentPropertyAnnotations = [];
-    protected array $currentPropertyPrototype = [];
+    protected ?PropertyTypeInterface $currentPropertyPrototype = null;
+    protected ?string $currentPropertyName = null;
 
     public function __construct(ConfigurationDefinition $config, SymfonyStyle $io)
     {
@@ -24,16 +26,15 @@ abstract class AbstractCodeGenerator implements CodeGeneratorInterface
         $this->config = $config;
     }
 
-    public function readSinglePropertyAnnotation(string $propertyName, MappingAttribute $annotation): void
+    public function readSinglePropertyAnnotation(string $propertyName, MappingAttribute $annotation, $entityParser): void
     {
-        if($this->currentPropertyName && $this->currentPropertyName !== $propertyName)
+        if(isset($this->currentPropertyName) && $this->currentPropertyName !== $propertyName)
         {
-            $this->doCurrentPropertyPrototype();
+            $this->doCurrentPropertyPrototype($entityParser);
             $this->doCode();
-            $this->currentPropertyName = $propertyName;
             $this->currentPropertyAnnotations = [];
         }
-        
+
         $this->currentPropertyName = $propertyName;
 
         if(SupportedAnnotationsEnum::isValid($annotation))
@@ -42,18 +43,19 @@ abstract class AbstractCodeGenerator implements CodeGeneratorInterface
         }
     }
 
-    public function doCurrentPropertyPrototype(): void
+    public function doCurrentPropertyPrototype(EntityParser $entityParser): void
     {
-        echo "Property name: {$this->currentPropertyName}" . PHP_EOL;
+        $this->currentPropertyPrototype = PropertyPrototypeFactory::create($this->currentPropertyName, $this->currentPropertyAnnotations);
+
         foreach($this->currentPropertyAnnotations as $annotation) {
-            switch($type = SupportedAnnotationsEnum::getType($annotation))
-            {
-                case SupportedAnnotationsEnum::COLUMN:
-                    $this->currentPropertyPrototype['type'] = $annotation->type;
-                    break;
-            }
+            $this->currentPropertyPrototype->handleAnnotation($annotation, $entityParser);
         }
     }
 
-    abstract public function doCode(): void;
+    public function reset(): void
+    {
+        $this->currentPropertyAnnotations = [];
+        $this->currentPropertyPrototype = null;
+        $this->currentPropertyName = null;
+    }
 }

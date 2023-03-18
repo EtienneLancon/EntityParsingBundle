@@ -1,6 +1,6 @@
 <?php
 
-namespace EntityParsingBundle\Generator\EntityParser;
+namespace EntityParsingBundle\Enum;
 
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Column;
@@ -20,6 +20,8 @@ use Doctrine\ORM\Mapping\SequenceGenerator;
 use Doctrine\ORM\Mapping\TableGenerator;
 use Doctrine\ORM\Mapping\JoinColumns;
 use Doctrine\ORM\Mapping\MappingAttribute;
+
+use EntityParsingBundle\Exception\UnsupportedAnnotationException;
 
 class SupportedAnnotationsEnum
 {
@@ -61,9 +63,14 @@ class SupportedAnnotationsEnum
         'JOIN_COLUMNS' => JoinColumns::class
     ];
 
-    static public function getType(MappingAttribute $annotation): ?string
+    static public function getType(MappingAttribute $annotation): string
     {
-        return array_search($class = get_class($annotation), self::VALUES) !== false ? $class : null;
+        $type = array_search($class = get_class($annotation), self::VALUES);
+
+        if($type === false)
+            throw new UnsupportedAnnotationException("Annotation $class is not supported");
+
+        return $type;
     }
 
     static public function getValues(): array

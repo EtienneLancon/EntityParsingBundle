@@ -1,13 +1,13 @@
 <?php
 
-namespace EntityParsingBundle\Generator;
+namespace EntityParsingBundle\Generator\EntityParser;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
 use EntityParsingBundle\Configuration\ConfigurationDefinition;
-use EntityParsingBundle\Generator\SupportedLanguagesEnum;
+use EntityParsingBundle\Enum\SupportedLanguagesEnum;
 use EntityParsingBundle\Generator\EntityParser\EntityParser;
 
-use EntityParsingBundle\Exception\UnsuportedLanguageException;
+use EntityParsingBundle\Exception\UnsupportedLanguageException;
 
 use EntityParsingBundle\Generator\CodeGeneratorInterface;
 use EntityParsingBundle\Generator\CodeGenerator\JsCodeGenerator;
@@ -33,16 +33,16 @@ class EntityParserFactory
         $this->config = $config;
         switch ($this->config->getLanguage()) {
             case SupportedLanguagesEnum::JAVASCRIPT:
-                $this->codegen = new JsCodeGenerator($this->config, $this->io);
+                $this->codegen = new JsCodeGenerator($this->config, $this->io, $this->entityParser);
                 break;
             case SupportedLanguagesEnum::TYPESCRIPT:
-                $this->codegen = new TsCodeGenerator($this->config, $this->io);
+                $this->codegen = new TsCodeGenerator($this->config, $this->io, $this->entityParser);
                 break;
             case SupportedLanguagesEnum::PYTHON:
-                $this->codegen = new PythonCodeGenerator($this->config, $this->io);
+                $this->codegen = new PythonCodeGenerator($this->config, $this->io, $this->entityParser);
                 break;
             default:
-                throw new UnsuportedLanguageException('Language '.$this->config->getLanguage().' is not supported.');
+                throw new UnsupportedLanguageException('Language '.$this->config->getLanguage().' is not supported.');
         }
 
         $this->entityParser->setup($this->config->getManager(), $this->codegen, $entity);

@@ -1,6 +1,6 @@
 <?php
 
-namespace EntityParsingBundle\Generator;
+namespace EntityParsingBundle\Enum;
 
 class SupportedLanguagesEnum
 {

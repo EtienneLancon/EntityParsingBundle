@@ -4,7 +4,7 @@ namespace EntityParsingBundle\Exception;
 
 use Exception;
 
-class PathNotReadableException extends Exception
+class NoPropertyFoundException extends Exception
 {
     
 }

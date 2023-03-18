@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use EntityParsingBundle\Configuration\ConfigurationDefinition;
-use EntityParsingBundle\Generator\EntityParserFactory;
+use EntityParsingBundle\Generator\EntityParser\EntityParserFactory;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 

@@ -8,6 +8,5 @@ class TsCodeGenerator extends AbstractCodeGenerator
 {
     public function doCode(): void
     {
-        dump($this->currentPropertyPrototype);
     }
 }

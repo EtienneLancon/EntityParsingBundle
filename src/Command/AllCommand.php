@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use EntityParsingBundle\Configuration\ConfigurationDefinition;
-use EntityParsingBundle\Generator\EntityParserFactory;
+use EntityParsingBundle\Generator\EntityParser\EntityParserFactory;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 

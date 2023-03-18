@@ -4,7 +4,7 @@ namespace EntityParsingBundle\Exception;
 
 use Exception;
 
-class UnsuportedLanguageException extends Exception
+class UnsupportedAnnotationException extends Exception
 {
 
 }

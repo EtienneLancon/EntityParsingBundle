@@ -5,7 +5,7 @@ namespace EntityParsingBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
-use EntityParsingBundle\Generator\SupportedLanguagesEnum;
+use EntityParsingBundle\Enum\SupportedLanguagesEnum;
 
 class Configuration implements ConfigurationInterface
 {
@@ -29,9 +29,12 @@ class Configuration implements ConfigurationInterface
                                 ->isRequired()
                                 ->cannotBeEmpty()
                             ->end()
-                            ->scalarNode('entity_manager_name')
+                            ->scalarNode('manager_name')
                                 ->defaultValue('default')
                                 ->cannotBeEmpty()
+                            ->end()
+                            ->booleanNode('private_properties')
+                                ->defaultTrue()
                             ->end()
                             ->booleanNode('generate_getters')
                                 ->defaultTrue()
@@ -39,7 +42,7 @@ class Configuration implements ConfigurationInterface
                             ->booleanNode('generate_setters')
                                 ->defaultTrue()
                             ->end()
-                            ->booleanNode('generate_constructors')
+                            ->booleanNode('generate_constructor')
                                 ->defaultTrue()
                             ->end()
                             ->booleanNode('interface')

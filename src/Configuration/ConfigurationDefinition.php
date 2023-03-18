@@ -5,12 +5,12 @@ namespace EntityParsingBundle\Configuration;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManager;
 
-use EntityParsingBundle\Generator\SupportedLanguagesEnum;
+use EntityParsingBundle\Enum\SupportedLanguagesEnum;
 
 use EntityParsingBundle\Exception\NoEntityFoundException;
 use EntityParsingBundle\Exception\PathNotFoundException;
 use EntityParsingBundle\Exception\PathNotWritableException;
-use EntityParsingBundle\Exception\UnsuportedLanguageException;
+use EntityParsingBundle\Exception\UnsupportedLanguageException;
 
 class ConfigurationDefinition
 {
@@ -19,14 +19,24 @@ class ConfigurationDefinition
     private EntityManager $em;
     private string $namespace;
     private string $managerName;
+    private bool $generateGetters;
+    private bool $generateSetters;
+    private bool $generateConstructor;
+    private bool $privateProperties;
+    private bool $interface;
 
     public function __construct(array $configuration, Registry $doctrine)
     {
         $this->targetPath = $configuration['target_path'];
         $this->language = $configuration['language'];
-        $this->managerName = $configuration['entity_manager_name'];
+        $this->managerName = $configuration['manager_name'];
+        $this->generateGetters = $configuration['generate_getters'];
+        $this->generateSetters = $configuration['generate_setters'];
+        $this->generateConstructor = $configuration['generate_constructor'];
+        $this->privateProperties = $configuration['private_properties'];
+        $this->interface = $configuration['interface'];
 
-        $this->em = $doctrine->getManager($configuration['entity_manager_name']);
+        $this->em = $doctrine->getManager($configuration['manager_name']);
         $this->namespace = array_values($this->em->getConfiguration()->getEntityNamespaces())[0];
 
         $this->doCheck();
@@ -58,14 +68,14 @@ class ConfigurationDefinition
     private function checkLanguage(): void
     {
         if (SupportedLanguagesEnum::isValid($this->language) === false) {
-            throw new UnsuportedLanguageException('Language '.$this->language.' is not supported');
+            throw new UnsupportedLanguageException('Language '.$this->language.' is not supported');
         }
     }
 
     public function isValidEntity(string $entity): bool
     {
         if(!class_exists($entity)){
-            throw new NoEntityFoundException('Entity '.$entity.' does not exist.');
+            return false;
         }
 
         return true;
@@ -89,5 +99,35 @@ class ConfigurationDefinition
     public function getNamespace(): string
     {
         return $this->namespace;
+    }
+
+    public function getManagerName(): string
+    {
+        return $this->managerName;
+    }
+
+    public function getGenerateGetters(): bool
+    {
+        return $this->generateGetters;
+    }
+
+    public function getGenerateSetters(): bool
+    {
+        return $this->generateSetters;
+    }
+
+    public function getGenerateConstructor(): bool
+    {
+        return $this->generateConstructor;
+    }
+
+    public function getPrivateProperties(): bool
+    {
+        return $this->privateProperties;
+    }
+
+    public function getInterface(): bool
+    {
+        return $this->interface;
     }
 }
