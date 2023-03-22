@@ -4,7 +4,6 @@ namespace EntityParsingBundle\Generator\EntityParser;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\JoinColumn;
 use EntityParsingBundle\Exception\NoEntityFoundException;
 use EntityParsingBundle\Exception\NoPropertyFoundException;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -43,32 +42,42 @@ class EntityParser
         }
     }
 
-    public function checkInverseJoin(string $targetEntity, string $property, bool $mandatory = false): ?string
+    public function checkInverseJoin(string $targetEntity, string $targetProperty, string $sourceProperty): void
     {
         $reflectionClass = $this->em->getClassMetadata($targetEntity)->getReflectionClass();
-        if(!isset($reflectionClass))
-            throw new NoEntityFoundException('Entity '.$targetEntity.' does not exist, referenced in '.$this->entity.'.');
 
-        $reflectionProperty = $reflectionClass->getProperty($property);
-        if(!isset($reflectionProperty))
-            throw new NoPropertyFoundException('Property '.$property.' does not exist, referenced in '.$targetEntity.'.');
+        if(!$reflectionClass->hasProperty($targetProperty))
+            throw new NoPropertyFoundException('Property '.$targetProperty.' does not exist in '.$targetEntity.', referenced in '.$this->entity.' field '.$sourceProperty.'.');
+
+        $reflectionProperty = $reflectionClass->getProperty($targetProperty);
 
         $annotations = $this->annotationReader->getPropertyAnnotations($reflectionProperty);
 
         foreach($annotations as $annotation) {
-            if(isset($annotation->targetEntity))
+            if(isset($annotation->mappedBy))
             {
                 if($annotation->targetEntity !== $this->entity)
-                    throw new NoPropertyFoundException('Property '.$property.' does not have a mappedBy annotation with the value '.$this->entity.', referenced in '.$targetEntity.'.');
-                else
-                    return $annotation->mappedBy;
+                    throw new NoEntityFoundException('Entity '.$this->entity.' references property '.$targetProperty.' in '.$targetEntity.' with mappedBy annotation, but the targetEntity does not match.');
+                
+                if($annotation->mappedBy !== $sourceProperty)
+                    throw new NoPropertyFoundException('Entity '.$this->entity.' references property '.$sourceProperty.' in '.$targetEntity.' with mappedBy annotation, but it was not found. Found '.$annotation->mappedBy.' instead.');
+                
+                return;
+            }
+
+            if(isset($annotation->inversedBy))
+            {
+                if($annotation->targetEntity !== $this->entity)
+                    throw new NoEntityFoundException('Entity '.$this->entity.' references property '.$targetProperty.' in '.$targetEntity.' with inversedBy annotation, but the targetEntity does not match.');
+                
+                if($annotation->inversedBy !== $sourceProperty)
+                    throw new NoPropertyFoundException('Entity '.$this->entity.' references property '.$sourceProperty.' in '.$targetEntity.' with inversedBy annotation, but it was not found. Found '.$annotation->inversedBy.' instead.');
+                
+                return;
             }
         }
-        
-        if($mandatory)
-            throw new NoPropertyFoundException('Property '.$property.' does not have a mappedBy annotation, referenced in '.$targetEntity.'.');
-
-        return null;
+    
+        throw new NoPropertyFoundException('Property '.$targetProperty.' does not have a mappedBy annotation, referenced in '.$targetEntity.'.');
     }
 
     private function parseEntities()
@@ -106,5 +115,10 @@ class EntityParser
         $this->codegen->doCurrentPropertyPrototype($this);
         $this->codegen->doCode();
         $this->codegen->reset();
+    }
+
+    public function getEntity(): string
+    {
+        return $this->entity;
     }
 }

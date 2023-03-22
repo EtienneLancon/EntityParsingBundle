@@ -5,6 +5,7 @@ namespace EntityParsingBundle\Enum;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\JoinColumn;
@@ -28,6 +29,7 @@ class SupportedAnnotationsEnum
     const ID = Id::class;
     const COLUMN = Column::class;
     const MANY_TO_ONE = ManyToOne::class;
+    const ONE_TO_ONE = OneToOne::class;
     const ONE_TO_MANY = OneToMany::class;
     const MANY_TO_MANY = ManyToMany::class;
     const JOIN_COLUMN = JoinColumn::class;
@@ -47,6 +49,7 @@ class SupportedAnnotationsEnum
         'ID' => Id::class,
         'COLUMN' => Column::class,
         'MANY_TO_ONE' => ManyToOne::class,
+        'ONE_TO_ONE' => OneToOne::class,
         'ONE_TO_MANY' => OneToMany::class,
         'MANY_TO_MANY' => ManyToMany::class,
         'JOIN_COLUMN' => JoinColumn::class,
@@ -65,12 +68,10 @@ class SupportedAnnotationsEnum
 
     static public function getType(MappingAttribute $annotation): string
     {
-        $type = array_search($class = get_class($annotation), self::VALUES);
-
-        if($type === false)
+        if(array_search($class = get_class($annotation), self::VALUES) === false)
             throw new UnsupportedAnnotationException("Annotation $class is not supported");
 
-        return $type;
+        return $class;
     }
 
     static public function getValues(): array

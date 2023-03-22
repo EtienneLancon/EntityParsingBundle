@@ -2,6 +2,8 @@
 
 namespace EntityParsingBundle\Generator\Structure;
 
+use Doctrine\ORM\Mapping\MappingAttribute;
+
 class JoinColumn
 {
     private string $joinColumn;
@@ -9,12 +11,12 @@ class JoinColumn
     private string $fieldType;
     private bool $nullable = false;
 
-    public function __construct(string $joinColumn, string $referencedColumnName, string $fieldType, bool $nullable = false)
+    public function __construct(MappingAttribute $annotation)
     {
-        $this->joinColumn = $joinColumn;
-        $this->referencedColumnName = $referencedColumnName;
-        $this->fieldType = $fieldType;
-        $this->nullable = $nullable;
+        $this->joinColumn = $annotation->name;
+        $this->referencedColumnName = $annotation->referencedColumnName;
+        $this->fieldType = $annotation->fieldType;
+        $this->nullable = $annotation->nullable;
     }
 
     public function getJoinColumn(): string
